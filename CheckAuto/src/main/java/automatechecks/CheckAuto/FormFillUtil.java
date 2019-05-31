@@ -25,11 +25,9 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-
 public class FormFillUtil {
 
-	public boolean formFiller(String reg_no, String engine_no, String chasis_no) throws FailingHttpStatusCodeException, MalformedURLException, IOException {
+	public boolean formFiller(String reg_no, String engine_no, String chasis_no) throws MalformedURLException, IOException {
 		try {
 			
 			//Apache HttpClient for https , ssl certificate should be trusted.
