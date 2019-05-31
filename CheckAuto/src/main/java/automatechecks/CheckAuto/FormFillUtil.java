@@ -1,5 +1,9 @@
 package automatechecks.CheckAuto;
 
+import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -8,6 +12,13 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
+
+import javax.imageio.ImageIO;
+import javax.swing.JEditorPane;
+import javax.swing.text.html.HTMLEditorKit;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -28,6 +39,8 @@ import org.apache.http.util.EntityUtils;
 public class FormFillUtil {
 
 	public boolean formFiller(String reg_no, String engine_no, String chasis_no) throws MalformedURLException, IOException {
+		Logger logger = LogManager.getLogManager().getLogger("");
+		logger.setLevel(Level.INFO);
 		try {
 			
 			//Apache HttpClient for https , ssl certificate should be trusted.
@@ -43,13 +56,15 @@ public class FormFillUtil {
 	    	//request to be built and sent
 	    	List <NameValuePair> request = new ArrayList <NameValuePair>();
 	    	
-	    	//vehical type is static 
-	    	request.add(new BasicNameValuePair("vehtype", "CAR")); 
 	    	
 	    	request.add(new BasicNameValuePair("rg_no", reg_no));
 	    	request.add(new BasicNameValuePair("engine_number", engine_no));
 	    	request.add(new BasicNameValuePair("chasis_number", chasis_no));
 	    	
+	    	//Setting static data to build the request
+	    	
+	    	//vehical type is static 
+	    	request.add(new BasicNameValuePair("vehtype", "CAR")); 
 	    	//criteria "search" is static
 	    	request.add(new BasicNameValuePair("criteria", "search"));
 	    	//page type is static
@@ -59,13 +74,13 @@ public class FormFillUtil {
 	    	//static data
 	    	request.add(new BasicNameValuePair("I4.yx", "10"));
 	    	
-	    	
 	    	boolean isVehicalStolen = sendBooleanResponse(webC, httpPost, request);
 	    	
 	    	return isVehicalStolen;
 	    	
 		} catch (KeyManagementException e) {
 			e.printStackTrace();
+			
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		} catch (KeyStoreException e) {
@@ -80,12 +95,45 @@ public class FormFillUtil {
 		HttpResponse response2 = webC.execute(httpPost);
 		System.out.println(response2.getEntity());
 		HttpEntity responseEntity = response2.getEntity();
-		String searchThisString = EntityUtils.toString(responseEntity);
-		if(searchThisString.contains("No match found for the above parameters")) {
+		
+		
+		String responseString = EntityUtils.toString(responseEntity);
+		
+		convertHtmlToImg(responseString);
+        
+		if(responseString.contains("No match found for the above parameters")) {
+			//take a pic and return true
 			return true;
 		}
 		else {
 			return false;
 		}
 	}
+
+	private void convertHtmlToImg(String responseString) {
+		
+		String split_segment_1[] = responseString.split("<form method=\"POST\" action=\"index.php\">");
+		String split_segment_2[] = split_segment_1[split_segment_1.length -1].split("<!-- hitwebcounter Code START -->");
+		
+		//Get the html string segment that will render the img
+		String HtmlToImg = split_segment_2[0];
+		System.out.println(HtmlToImg);
+	      int width = 1000, height = 1000;
+	      BufferedImage image = GraphicsEnvironment.getLocalGraphicsEnvironment()
+	          .getDefaultScreenDevice().getDefaultConfiguration()
+	          .createCompatibleImage(width, height);
+	
+	      Graphics graphics = image.createGraphics();
+	      //Convert given HTML to Image format
+	      
+	      JEditorPane jep = new JEditorPane("text/html", HtmlToImg);
+	      jep.setSize(width, height);
+	      jep.print(graphics);
+	      try {
+	    	  	//Save image in PNG format
+				ImageIO.write(image, "png", new File("Captured_Img.png"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 }

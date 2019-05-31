@@ -1,5 +1,14 @@
 package automatechecks.CheckAuto;
 
+import java.awt.AWTException;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
+import java.awt.Rectangle;
+import java.awt.Robot;
+import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.security.KeyManagementException;
@@ -9,7 +18,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.net.ssl.HttpsURLConnection;
+import javax.swing.JEditorPane;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -38,20 +49,20 @@ public class AutoFormSubmitController
 {
     public static void main( String[] args ) 
     {
-    	
+    	// 1st method for https://zipnet.delhipolice.gov.in/index.php
     	try {
-    			// 1st method for https://zipnet.delhipolice.gov.in/index.php
-			//Method params formFiller(reg_no,engine_no,chasis_no)
-			boolean isVehicalStolen = new FormFillUtil().formFiller("DL1CT0107","K12MN1540680","MA3EJKD1S00691921");
-			
-			
-			if(isVehicalStolen) {
-				System.out.println("YES Radio Button is pressed.");
-			}
-			else {
-				System.out.println("NO Radio Button is pressed.");
-			}
-			
+    		
+    		if(null!=args && args.length>0) {
+    			
+    			String reg_no = args[0];
+        		String engine_no = args[1];
+        		String chasis_no = args[2];
+        		boolean isVehicalStolen = new FormFillUtil().formFiller(reg_no,engine_no,chasis_no); //Method params formFiller(reg_no,engine_no,chasis_no)
+        		System.out.println("Vehicle is stolen? -> "+ (!isVehicalStolen));
+    		}
+    		else {
+    			System.out.println("Please give input params as : reg_no, engine_no, chasis_no");
+    		}
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
